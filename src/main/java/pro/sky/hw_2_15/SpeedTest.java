@@ -1,9 +1,11 @@
 package pro.sky.hw_2_15;
 
 
+import java.util.Arrays;
+
 public class SpeedTest {
 
-    public static Integer[] generateRandomArray() {
+    private static Integer[] generateRandomArray() {
         java.util.Random random = new java.util.Random();
         Integer[] arr = new Integer[100000];
         for (int i = 0; i < arr.length; i++) {
@@ -17,7 +19,7 @@ public class SpeedTest {
         arr[indexB] = tmp;
     }
 
-    public static void sortBubble(Integer[] arr) {
+    private static void sortBubble(Integer[] arr) {
         for (int i = 0; i < arr.length - 1; i++) {
             for (int j = 0; j < arr.length - 1 - i; j++) {
                 if (arr[j] > arr[j + 1]) {
@@ -27,7 +29,7 @@ public class SpeedTest {
         }
     }
     //эта сортировка самая бытрая из трех
-    public static void sortSelection(Integer[] arr) {
+    private static void sortSelection(Integer[] arr) {
         for (int i = 0; i < arr.length - 1; i++) {
             int minElementIndex = i;
             for (int j = i + 1; j < arr.length; j++) {
@@ -38,7 +40,7 @@ public class SpeedTest {
             swapElements(arr, i, minElementIndex);
         }
     }
-    public static void sortInsertion(Integer[] arr) {
+    private static void sortInsertion(Integer[] arr) {
         for (int i = 1; i < arr.length; i++) {
             Integer temp = arr[i];
             int j = i;
@@ -49,18 +51,36 @@ public class SpeedTest {
             arr[j] = temp;
         }
     }
+    public static void quickSort(Integer[] arr, Integer begin, Integer end) {
+        if (begin < end) {
+            int partitionIndex = partition(arr, begin, end);
+
+            quickSort(arr, begin, partitionIndex - 1);
+            quickSort(arr, partitionIndex + 1, end);
+        }
+    }
+
+    private static int partition(Integer[] arr, Integer begin, Integer end) {
+        Integer pivot = arr[end];
+        int i = (begin - 1);
+
+        for (Integer j = begin; j < end; j++) {
+            if (arr[j] <= pivot) {
+                i++;
+
+                swapElements(arr, i, j);
+            }
+        }
+
+        swapElements(arr, i + 1, end);
+        return i + 1;
+    }
 
     public static void main(String[] args) {
-        long startFirst = System.currentTimeMillis();
-        sortBubble(generateRandomArray());
-        System.out.println(System.currentTimeMillis() - startFirst);
 
-        long startSecond = System.currentTimeMillis();
-        sortSelection(generateRandomArray());
-        System.out.println(System.currentTimeMillis() - startSecond);
-
-        long startThird = System.currentTimeMillis();
-        sortInsertion(generateRandomArray());
-        System.out.println(System.currentTimeMillis() - startThird);
+        long startFourth = System.currentTimeMillis();
+        Integer[] arr = generateRandomArray();
+        quickSort(arr, 0, 99999);
+        System.out.println(System.currentTimeMillis() - startFourth);
     }
 }
