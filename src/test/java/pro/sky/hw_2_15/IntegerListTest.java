@@ -100,17 +100,6 @@ public class IntegerListTest {
         assertFalse(integerList.contains(2));
     }
 
-    @Test
-    public void sizeReturnsThreeAfterExtend() {
-        integerList.extend();
-        assertEquals(3, integerList.size());
-    }
-
-    @Test
-    public void sizeReturnsOneAfterContract() {
-        integerList.contract();
-        assertEquals(1, integerList.size());
-    }
 
     @Test
     public void returnsZeroAfterAdd() {
@@ -136,7 +125,7 @@ public class IntegerListTest {
 
     @Test
     public void throwsIncorrectIndexExceptionTryingToAddElementByWrongIndex() {
-        assertThrows(IncorrectIndexException.class, () -> integerList.add(2, 0));
+        assertThrows(IncorrectIndexException.class, () -> integerList.add(3, 0));
     }
 
     @Test
@@ -157,7 +146,8 @@ public class IntegerListTest {
 
     @Test
     public void returnsOneAfterRemoval() {
-        assertEquals(1, integerList.remove(1));
+        Integer q = 1;
+        assertEquals(1, integerList.remove(q));
     }
 
     @Test

@@ -4,16 +4,17 @@ import org.springframework.stereotype.Service;
 import pro.sky.hw_2_15.Exception.IncorrectIndexException;
 import pro.sky.hw_2_15.Exception.IncorrectObjectException;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 @Service
 public class IntegerList {
 
-    private Integer[] integerList = new Integer[0];
+    private Integer[] integerList;
+    private int size;
 
-
-    public Integer[] getStringList() {
-        return integerList;
+    public IntegerList() {
+        integerList = new Integer[10];
     }
 
     //перестановка элементов
@@ -24,28 +25,41 @@ public class IntegerList {
     }
 
     //сортировка
-    public void sort(Integer[] arr) {
-        for (int i = 0; i < arr.length - 1; i++) {
-            int minElementIndex = i;
-            for (int j = i + 1; j < arr.length; j++) {
-                if (arr[j] < arr[minElementIndex]) {
-                    minElementIndex = j;
-                }
-            }
-            swapElements(arr, i, minElementIndex);
+    public static void quickSort(Integer[] arr, Integer begin, Integer end) {
+        if (begin < end) {
+            int partitionIndex = partition(arr, begin, end);
+
+            quickSort(arr, begin, partitionIndex - 1);
+            quickSort(arr, partitionIndex + 1, end);
         }
+    }
+
+    private static int partition(Integer[] arr, Integer begin, Integer end) {
+        Integer pivot = arr[end];
+        int i = (begin - 1);
+
+        for (Integer j = begin; j < end; j++) {
+            if (arr[j] <= pivot) {
+                i++;
+
+                swapElements(arr, i, j);
+            }
+        }
+
+        swapElements(arr, i + 1, end);
+        return i + 1;
     }
 
     // Проверка на существование элемента. Бинарный поиск.
     // Вернуть true/false;
     public boolean contains(Integer item) {
-        Integer[] temp = integerList;
-        sort(temp);
+        Integer[] temp = Arrays.copyOf(integerList, size);
+        quickSort(temp, 0, size-1);
         int min = 0;
-        int max = temp.length - 1;
+        int max = size - 1;
         while (min <= max) {
             int mid = (min + max) / 2;
-            if (item == temp[mid]) {
+            if (item.equals(temp[mid])) {
                 return true;
             }
             if (item < temp[mid]) {
@@ -58,48 +72,41 @@ public class IntegerList {
     }
 
     //увеличение хранилища
-    public void extend() {
-        Integer[] newList = new Integer[integerList.length + 1];
-        for (int i = 0; i < integerList.length; i++) {
-            newList[i] = integerList[i];
-        }
-        integerList = newList;
+    private void grow() {
+        integerList = Arrays.copyOf(integerList, (int) (integerList.length * 1.5));
     }
 
-    //уменьшение хранилища
-    public void contract() {
-        Integer[] newList = new Integer[integerList.length - 1];
-        for (int i = 0; i < integerList.length - 1; i++) {
-            newList[i] = integerList[i];
-        }
-        integerList = newList;
-    }
 
     // Добавление элемента.
     // Вернуть добавленный элемент
     // в качестве результата выполнения.
     public Integer add(Integer item) {
-        extend();
-        return integerList[integerList.length - 1] = item;
+        if (size == integerList.length) {
+            grow();
+        }
+        return integerList[size++] = item;
     }
 
     // Добавление элемента на определенную позицию списка.
     // Если выходит за пределы фактического количества элементов или массива, выбросить исключение.
     // Вернуть добавленный элемент в качестве результата выполнения.
     public Integer add(int index, Integer item) {
-        if (index > integerList.length - 1) {
+        if (index > size) {
             throw new IncorrectIndexException("индекс превышает размер хранилища");
         }
-        extend();
-        for (int i = (integerList.length - 2); i >= index; i--)
-            integerList[i + 1] = integerList[i];
+        if (size == integerList.length) {
+            grow();
+        }
+        size++;
+        if (size + 1 - index >= 0)
+            System.arraycopy(integerList, index, integerList, index + 1, size + 1 - index);
         return integerList[index] = item;
     }
 
     // Установить элемент на определенную позицию, затерев существующий.
     // Выбросить исключение, если индекс больше фактического количества элементов или выходит за пределы массива.
     public Integer set(int index, Integer item) {
-        if (index > integerList.length - 1) {
+        if (index >= size) {
             throw new IncorrectIndexException("индекс превышает размер хранилища");
         }
         return integerList[index] = item;
@@ -111,15 +118,14 @@ public class IntegerList {
         if (!contains(item)) {
             throw new IncorrectObjectException("Указанного элемента нет в хранилище");
         } else {
-            for (int i = 0; i < integerList.length; i++) {
+            for (int i = 0; i < size; i++) {
                 if (integerList[i].equals(item)) {
-                    for (int j = i; j < integerList.length - 1; j++) {
-                        integerList[j] = integerList[j + 1];
-                    }
+                    if (size - 1 - i >= 0)
+                        System.arraycopy(integerList, i + 1, integerList, i, size - 1 - i);
                 }
             }
         }
-        contract();
+        size--;
         return item;
     }
 
@@ -127,15 +133,14 @@ public class IntegerList {
     // Вернуть удаленный элемент или исключение, если подобный элемент отсутствует в списке.
     public Integer remove(int index) {
         Integer forReturn;
-        if (index >= integerList.length) {
+        if (index >= size) {
             throw new IncorrectIndexException("индекс превышает размер хранилища");
         } else {
             forReturn = integerList[index];
-            for (int i = index; i < integerList.length - 1; i++) {
-                integerList[i] = integerList[i + 1];
-            }
+            if (integerList.length - 1 - index >= 0)
+                System.arraycopy(integerList, index + 1, integerList, index, integerList.length - 1 - index);
         }
-        contract();
+        size--;
         return forReturn;
     }
 
@@ -165,7 +170,7 @@ public class IntegerList {
     // Получить элемент по индексу.
     // Вернуть элемент или исключение, если выходит за рамки фактического количества элементов.
     public Integer get(int index) {
-        if (index > integerList.length - 1) {
+        if (index > size - 1) {
             throw new IncorrectIndexException("индекс превышает размер хранилища");
         }
         return integerList[index];
@@ -174,36 +179,28 @@ public class IntegerList {
     // Сравнить текущий список с другим.
     // Вернуть true/false или исключение, если передан null.
     public boolean equals(IntegerList otherList) {
-        if (otherList.size() != integerList.length) {
-            return false;
-        }
-        for (int i = 0; i < integerList.length; i++) {
-            if (!Objects.equals(integerList[i], otherList.get(i))) {
-                return false;
-            }
-        }
-        return true;
+        return Arrays.equals(this.toArray(), otherList.toArray());
     }
 
     // Вернуть фактическое количество элементов.
     public int size() {
-        return integerList.length;
+        return size;
     }
 
     // Вернуть true, если элементов в списке нет, иначе false.
     public boolean isEmpty() {
-        return integerList.length <= 0;
+        return size == 0;
     }
 
     // Удалить все элементы из списка.
     public void clear() {
-        integerList = new Integer[0];
+        integerList = new Integer[10];
+        size = 0;
     }
 
     // Создать новый массив из строк в списке и вернуть его.
     public Integer[] toArray() {
-        Integer[] newList = new Integer[integerList.length];
-        return newList = integerList;
+        return Arrays.copyOf(integerList, size);
     }
 }
 
